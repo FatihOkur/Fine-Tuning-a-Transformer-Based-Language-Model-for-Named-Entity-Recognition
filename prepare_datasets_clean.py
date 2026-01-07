@@ -221,8 +221,8 @@ def prepare_datasets_clean(dataset1_path, dataset2_path, output_dir='./data', te
     print(f"   Test:  {test_tokens:,} tokens, {test_entities} entities ({test_entities/test_tokens*100:.1f}%)")
     
     # Save datasets
-    train_path = os.path.join(output_dir, 'train_clean.json')
-    test_path = os.path.join(output_dir, 'test_clean.json')
+    train_path = os.path.join(output_dir, 'train.json')
+    test_path = os.path.join(output_dir, 'test.json')
     
     print(f"\n💾 STEP 6: Saving cleaned datasets...")
     with open(train_path, 'w', encoding='utf-8') as f:
