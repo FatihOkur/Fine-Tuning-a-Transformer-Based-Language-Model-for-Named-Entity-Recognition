@@ -11,8 +11,8 @@ if not exist "train_with_validation.py" (
     exit /b 1
 )
 
-if not exist "pipeline_FIXED.py" (
-    echo ERROR: pipeline_FIXED.py not found!
+if not exist "pipeline.py" (
+    echo ERROR: pipeline.py not found!
     pause
     exit /b 1
 )
@@ -69,7 +69,7 @@ echo.
 REM Create results directory
 if not exist "results" mkdir results
 
-python pipeline_FIXED.py --model_load_path "./ner_model" --input_file "./data/test.json" --output_file "./results/predictions.json"
+python pipeline.py --model_load_path "./ner_model" --input_file "./data/test.json" --output_file "./results/predictions.json"
 
 if %errorlevel% neq 0 (
     echo.
