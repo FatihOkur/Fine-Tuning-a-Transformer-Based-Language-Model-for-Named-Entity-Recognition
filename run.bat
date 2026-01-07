@@ -38,8 +38,8 @@ echo ======================================================
 echo.
 echo Settings:
 echo   - Model: distilbert-base-uncased
-echo   - Epochs: 3
-echo   - Learning rate: 2e-5
+echo   - Epochs: 10
+echo   - Learning rate: 5e-5
 echo   - Validation split: 10%%
 echo   - Class weights: ENABLED
 echo.

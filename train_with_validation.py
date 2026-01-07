@@ -127,36 +127,80 @@ class WeightedTrainer(Trainer):
         
         return (loss, outputs) if return_outputs else loss
 
-# Custom callback for printing progress
+# Custom callback for printing progress with proper evaluation
 class ProgressCallback(TrainerCallback):
-    def __init__(self, num_epochs):
+    def __init__(self, num_epochs, trainer=None):
         self.num_epochs = num_epochs
         self.epoch_metrics = []
+        self.trainer = trainer
+        self.train_dataset = None
+        self.val_dataset = None
+    
+    def set_datasets(self, train_dataset, val_dataset):
+        """Set train and validation datasets after initialization"""
+        self.train_dataset = train_dataset
+        self.val_dataset = val_dataset
     
     def on_epoch_end(self, args, state, control, logs=None, **kwargs):
         epoch = int(state.epoch)
-        train_loss = state.log_history[-2].get('loss', 0) if len(state.log_history) >= 2 else 0
         
-        # Get validation metrics from the last log entry
-        eval_logs = [log for log in state.log_history if 'eval_loss' in log]
-        if eval_logs:
-            last_eval = eval_logs[-1]
-            val_loss = last_eval.get('eval_loss', 0)
-            val_accuracy = last_eval.get('eval_accuracy', 0)
-        else:
-            val_loss = 0
-            val_accuracy = 0
+        print(f"\n📊 Evaluating epoch {epoch}/{self.num_epochs}...", end=" ", flush=True)
         
-        # Calculate train accuracy from loss (approximate)
-        train_accuracy = max(0, 1 - train_loss)
+        # Calculate training metrics on a subset (for speed)
+        train_loss = 0
+        train_accuracy = 0
+        if self.trainer and self.train_dataset:
+            try:
+                # Use 20% of training data for evaluation (for speed)
+                subset_size = min(len(self.train_dataset), max(100, len(self.train_dataset) // 5))
+                train_subset = self.train_dataset.select(range(subset_size))
+                
+                # Temporarily disable logging to avoid clutter
+                original_logging = args.logging_steps
+                args.logging_steps = 100000
+                
+                # Evaluate on training subset
+                train_metrics = self.trainer.evaluate(train_subset, metric_key_prefix="train")
+                train_loss = train_metrics.get('train_loss', 0)
+                train_accuracy = train_metrics.get('train_accuracy', 0)
+                
+                # Restore logging
+                args.logging_steps = original_logging
+            except Exception as e:
+                print(f"\n⚠️  Warning: Could not evaluate training set: {e}")
+                train_loss = 0
+                train_accuracy = 0
+        
+        # Calculate validation metrics on full validation set
+        val_loss = 0
+        val_accuracy = 0
+        if self.trainer and self.val_dataset:
+            try:
+                # Temporarily disable logging
+                original_logging = args.logging_steps
+                args.logging_steps = 100000
+                
+                # Evaluate on full validation set
+                val_metrics = self.trainer.evaluate(self.val_dataset, metric_key_prefix="val")
+                val_loss = val_metrics.get('val_loss', 0)
+                val_accuracy = val_metrics.get('val_accuracy', 0)
+                
+                # Restore logging
+                args.logging_steps = original_logging
+            except Exception as e:
+                print(f"\n⚠️  Warning: Could not evaluate validation set: {e}")
+                val_loss = 0
+                val_accuracy = 0
+        
+        print("Done!")
         
         # Store metrics
         self.epoch_metrics.append({
             'epoch': epoch,
-            'train_loss': train_loss,
-            'train_accuracy': train_accuracy,
-            'val_loss': val_loss,
-            'val_accuracy': val_accuracy
+            'train_loss': float(train_loss),
+            'train_accuracy': float(train_accuracy),
+            'val_loss': float(val_loss),
+            'val_accuracy': float(val_accuracy)
         })
         
         # Print in the requested format
@@ -274,18 +318,17 @@ def main():
         desc="Tokenizing validation"
     )
     
-    # Setup training arguments with validation
+    # Setup training arguments WITHOUT automatic evaluation
+    # We'll do evaluation manually in the callback for better control
     training_args = TrainingArguments(
         output_dir=args.model_save_path,
-        eval_strategy="epoch",  # Evaluate every epoch
+        eval_strategy="no",  # Disable automatic evaluation
         learning_rate=args.learning_rate,
         per_device_train_batch_size=args.batch_size,
         per_device_eval_batch_size=args.batch_size,
         num_train_epochs=args.num_train_epochs,
         weight_decay=0.01,
         save_strategy="epoch",
-        load_best_model_at_end=True,
-        metric_for_best_model="f1",
         logging_steps=50,
         save_total_limit=2,
         fp16=False,
@@ -329,6 +372,10 @@ def main():
             compute_metrics=lambda p: compute_metrics(p, label_list, metric),
             callbacks=[progress_callback]
         )
+    
+    # Set datasets in callback after trainer is created
+    progress_callback.trainer = trainer
+    progress_callback.set_datasets(tokenized_train, tokenized_val)
     
     # Train
     print("\n" + "=" * 70)
