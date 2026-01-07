@@ -188,7 +188,7 @@ class ProgressCallback(TrainerCallback):
                 # Restore logging
                 args.logging_steps = original_logging
             except Exception as e:
-                print(f"\n⚠️  Warning: Could not evaluate validation set: {e}")
+                print(f"\n  Warning: Could not evaluate validation set: {e}")
                 val_loss = 0
                 val_accuracy = 0
         
@@ -225,34 +225,34 @@ def main():
     print("=" * 70)
     print("NER MODEL TRAINING - WITH VALIDATION SET")
     print("=" * 70)
-    print(f"\n⚙️  CPU thread count: {torch.get_num_threads()}")
-    print(f"⚙️  Batch size: {args.batch_size}")
-    print(f"⚙️  Epochs: {args.num_train_epochs}")
-    print(f"⚙️  Learning rate: {args.learning_rate}")
-    print(f"⚙️  Validation split: {args.validation_split:.1%}")
-    print(f"⚙️  Class weights: {'ENABLED' if args.use_class_weights else 'DISABLED'}")
+    print(f"\n  CPU thread count: {torch.get_num_threads()}")
+    print(f"  Batch size: {args.batch_size}")
+    print(f"  Epochs: {args.num_train_epochs}")
+    print(f"  Learning rate: {args.learning_rate}")
+    print(f"  Validation split: {args.validation_split:.1%}")
+    print(f"  Class weights: {'ENABLED' if args.use_class_weights else 'DISABLED'}")
     
     # Load data
-    print(f"\n📥 Loading training data from: {args.dataset_path}")
+    print(f"\n Loading training data from: {args.dataset_path}")
     all_train_data = load_data(args.dataset_path)
-    print(f"✅ Loaded {len(all_train_data)} training examples")
+    print(f" Loaded {len(all_train_data)} training examples")
     
     # Split into train and validation
-    print(f"\n✂️  Splitting into train ({1-args.validation_split:.0%}) and validation ({args.validation_split:.0%})...")
+    print(f"\n  Splitting into train ({1-args.validation_split:.0%}) and validation ({args.validation_split:.0%})...")
     train_data, val_data = train_test_split(
         all_train_data, 
         test_size=args.validation_split, 
         random_state=42
     )
-    print(f"✅ Train: {len(train_data)} examples")
-    print(f"✅ Validation: {len(val_data)} examples")
+    print(f" Train: {len(train_data)} examples")
+    print(f" Validation: {len(val_data)} examples")
     
     # Get label list
     label_list = get_label_list(all_train_data)
     label_to_id = {label: i for i, label in enumerate(label_list)}
     id_to_label = {i: label for label, i in label_to_id.items()}
     
-    print(f"\n🏷️  Label list ({len(label_list)} labels):")
+    print(f"\n  Label list ({len(label_list)} labels):")
     print(label_list)
     
     # Analyze label distribution
@@ -263,7 +263,7 @@ def main():
             label_counts[tag] = label_counts.get(tag, 0) + 1
             total_tokens += 1
     
-    print(f"\n📊 Training label distribution:")
+    print(f"\n Training label distribution:")
     for label in label_list:
         count = label_counts.get(label, 0)
         percentage = (count / total_tokens) * 100
@@ -273,7 +273,7 @@ def main():
     # Compute class weights if enabled
     class_weights = None
     if args.use_class_weights:
-        print(f"\n⚖️  Computing class weights for imbalanced data...")
+        print(f"\n  Computing class weights for imbalanced data...")
         class_weights = compute_class_weights(train_data, label_to_id)
         print(f"   Class weights computed:")
         for i, label in enumerate(label_list[:5]):  # Show first 5
@@ -293,7 +293,7 @@ def main():
     })
     
     # Load tokenizer and model
-    print(f"\n📂 Loading tokenizer and model: {args.model_checkpoint}")
+    print(f"\n Loading tokenizer and model: {args.model_checkpoint}")
     tokenizer = AutoTokenizer.from_pretrained(args.model_checkpoint)
     model = AutoModelForTokenClassification.from_pretrained(
         args.model_checkpoint,
@@ -303,7 +303,7 @@ def main():
     )
     
     # Tokenize datasets
-    print("\n🔧 Tokenizing datasets...")
+    print("\n Tokenizing datasets...")
     tokenized_train = train_dataset.map(
         lambda x: tokenize_and_align_labels(x, tokenizer, label_to_id),
         batched=True,
@@ -348,7 +348,7 @@ def main():
     
     # Create trainer (with or without class weights)
     if args.use_class_weights and class_weights is not None:
-        print("\n🏋️  Using WeightedTrainer with class weights")
+        print("\n  Using WeightedTrainer with class weights")
         trainer = WeightedTrainer(
             model=model,
             args=training_args,
@@ -361,7 +361,7 @@ def main():
             callbacks=[progress_callback]
         )
     else:
-        print("\n🏋️  Using standard Trainer (no class weights)")
+        print("\n  Using standard Trainer (no class weights)")
         trainer = Trainer(
             model=model,
             args=training_args,
@@ -379,20 +379,20 @@ def main():
     
     # Train
     print("\n" + "=" * 70)
-    print("🚀 STARTING TRAINING WITH VALIDATION...")
+    print(" STARTING TRAINING WITH VALIDATION...")
     print("=" * 70)
-    print(f"⏱️  Estimated time: {args.num_train_epochs * 10}-{args.num_train_epochs * 20} minutes (CPU)")
+    print(f"  Estimated time: {args.num_train_epochs * 10}-{args.num_train_epochs * 20} minutes (CPU)")
     print("=" * 70 + "\n")
     
     train_result = trainer.train()
     
     # Get final validation metrics
     print("\n" + "=" * 70)
-    print("📊 EVALUATING ON VALIDATION SET...")
+    print(" EVALUATING ON VALIDATION SET...")
     print("=" * 70)
     val_metrics = trainer.evaluate()
     
-    print(f"\n✅ Final Validation Metrics:")
+    print(f"\n Final Validation Metrics:")
     print(f"   Loss:      {val_metrics['eval_loss']:.4f}")
     print(f"   Accuracy:  {val_metrics['eval_accuracy']:.4f}")
     print(f"   Precision: {val_metrics['eval_precision']:.4f}")
@@ -403,7 +403,7 @@ def main():
     test_metrics = None
     if args.test_dataset_path and os.path.exists(args.test_dataset_path):
         print("\n" + "=" * 70)
-        print("📊 EVALUATING ON TEST SET...")
+        print(" EVALUATING ON TEST SET...")
         print("=" * 70)
         
         test_data = load_data(args.test_dataset_path)
@@ -421,7 +421,7 @@ def main():
         
         test_metrics = trainer.evaluate(tokenized_test)
         
-        print(f"\n✅ Test Set Metrics:")
+        print(f"\n Test Set Metrics:")
         print(f"   Loss:      {test_metrics['eval_loss']:.4f}")
         print(f"   Accuracy:  {test_metrics['eval_accuracy']:.4f}")
         print(f"   Precision: {test_metrics['eval_precision']:.4f}")
@@ -429,7 +429,7 @@ def main():
         print(f"   F1 Score:  {test_metrics['eval_f1']:.4f}")
     
     # Save final model
-    print(f"\n💾 Saving model to: {args.model_save_path}")
+    print(f"\n Saving model to: {args.model_save_path}")
     trainer.save_model(args.model_save_path)
     tokenizer.save_pretrained(args.model_save_path)
     
@@ -477,17 +477,17 @@ def main():
         json.dump(metrics_dict, f, indent=2)
     
     print("\n" + "=" * 70)
-    print("✅ TRAINING COMPLETE!")
+    print(" TRAINING COMPLETE!")
     print("=" * 70)
-    print(f"📁 Model saved to: {args.model_save_path}")
-    print(f"📊 Metrics saved to: {metrics_path}")
+    print(f" Model saved to: {args.model_save_path}")
+    print(f" Metrics saved to: {metrics_path}")
     
     # Print summary
     print("\n" + "=" * 70)
-    print("📈 TRAINING SUMMARY")
+    print(" TRAINING SUMMARY")
     print("=" * 70)
     
-    print("\n🔄 Per-Epoch Progress:")
+    print("\n Per-Epoch Progress:")
     for epoch_metric in progress_callback.epoch_metrics:
         print(f"   Epoch {epoch_metric['epoch']}/{args.num_train_epochs}: "
               f"Train Loss={epoch_metric['train_loss']:.4f}, "
@@ -495,7 +495,7 @@ def main():
               f"Val Loss={epoch_metric['val_loss']:.4f}, "
               f"Val Acc={epoch_metric['val_accuracy']:.4f}")
     
-    print(f"\n🎯 Final Performance:")
+    print(f"\n Final Performance:")
     print(f"   Validation Accuracy: {val_metrics['eval_accuracy']:.4f}")
     print(f"   Validation F1 Score: {val_metrics['eval_f1']:.4f}")
     

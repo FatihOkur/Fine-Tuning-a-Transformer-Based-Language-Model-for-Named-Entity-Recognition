@@ -1,15 +1,5 @@
 #!/bin/bash
 
-################################################################################
-# NER Model Training and Testing Pipeline
-# COMP 451 - Project #3
-# 
-# This script automates the complete workflow:
-# 1. Data preparation
-# 2. Model training with validation
-# 3. Testing and evaluation
-################################################################################
-
 set -e  # Exit on any error
 
 # Colors for output
@@ -29,10 +19,6 @@ LEARNING_RATE=5e-5
 BATCH_SIZE=8
 VALIDATION_SPLIT=0.1
 
-################################################################################
-# Helper Functions
-################################################################################
-
 print_header() {
     echo ""
     echo "======================================================================"
@@ -42,19 +28,19 @@ print_header() {
 }
 
 print_success() {
-    echo -e "${GREEN}✅ $1${NC}"
+    echo -e "${GREEN} $1${NC}"
 }
 
 print_error() {
-    echo -e "${RED}❌ $1${NC}"
+    echo -e "${RED} $1${NC}"
 }
 
 print_warning() {
-    echo -e "${YELLOW}⚠️  $1${NC}"
+    echo -e "${YELLOW}  $1${NC}"
 }
 
 print_info() {
-    echo -e "${BLUE}ℹ️  $1${NC}"
+    echo -e "${BLUE}ℹ  $1${NC}"
 }
 
 check_file() {
@@ -73,10 +59,6 @@ check_python() {
     PYTHON_VERSION=$(python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
     print_info "Python version: $PYTHON_VERSION"
 }
-
-################################################################################
-# Main Pipeline
-################################################################################
 
 main() {
     print_header "NER MODEL TRAINING AND TESTING PIPELINE"
@@ -177,9 +159,9 @@ main() {
     print_success "Inference completed successfully"
     
     # Final summary
-    print_header "✅ PIPELINE COMPLETED SUCCESSFULLY"
+    print_header " PIPELINE COMPLETED SUCCESSFULLY"
     
-    echo "📁 Generated Files:"
+    echo " Generated Files:"
     echo ""
     echo "  Data:"
     echo "    - $DATA_DIR/train.json           (Training data)"
@@ -197,7 +179,7 @@ main() {
     
     # Display metrics if jq is available
     if command -v jq &> /dev/null; then
-        print_header "📊 MODEL PERFORMANCE SUMMARY"
+        print_header " MODEL PERFORMANCE SUMMARY"
         
         echo "Training Configuration:"
         jq -r '.training_info | 
@@ -232,7 +214,7 @@ main() {
     fi
     
     echo ""
-    print_header "📝 NEXT STEPS"
+    print_header " NEXT STEPS"
     echo "1. View training metrics:"
     echo "   cat $MODEL_SAVE_PATH/training_metrics.json"
     echo ""
@@ -247,10 +229,6 @@ main() {
     echo ""
     echo ""
 }
-
-################################################################################
-# Script Entry Point
-################################################################################
 
 # Parse command line arguments
 SKIP_CLEANUP=false

@@ -50,8 +50,8 @@ def load_dataset1_clean(filepath):
     if current_sentence['tokens']:
         sentences.append(current_sentence)
     
-    print(f"\n✅ Loaded {len(sentences)} sentences from Dataset1")
-    print(f"🧹 Cleaned {removed_count} labels (gpe, art → O)")
+    print(f"\n Loaded {len(sentences)} sentences from Dataset1")
+    print(f" Cleaned {removed_count} labels (gpe, art → O)")
     
     # Print statistics
     if sentences:
@@ -68,7 +68,7 @@ def load_dataset1_clean(filepath):
         
         print(f"\n   Label distribution (AFTER cleaning):")
         for label, count in sorted(label_counts.items(), key=lambda x: x[1], reverse=True)[:10]:
-            marker = "📍" if label != 'O' else "  "
+            marker = "!!!" if label != 'O' else "  "
             print(f"      {marker} {label:10s}: {count:5d}")
     
     return sentences
@@ -100,8 +100,8 @@ def load_dataset2_clean(filepath):
         
         sentences.append({'tokens': tokens, 'ner_tags': cleaned_tags})
     
-    print(f"✅ Loaded {len(sentences)} sentences from Dataset2")
-    print(f"🧹 Cleaned {removed_count} labels (cur → O)")
+    print(f" Loaded {len(sentences)} sentences from Dataset2")
+    print(f" Cleaned {removed_count} labels (cur → O)")
     
     # Print statistics
     if sentences:
@@ -118,7 +118,7 @@ def load_dataset2_clean(filepath):
         
         print(f"\n   Label distribution (AFTER cleaning):")
         for label, count in sorted(label_counts.items(), key=lambda x: x[1], reverse=True)[:10]:
-            marker = "📍" if label != 'O' else "  "
+            marker = "!!!" if label != 'O' else "  "
             print(f"      {marker} {label:10s}: {count:5d}")
     
     return sentences
@@ -133,39 +133,39 @@ def prepare_datasets_clean(dataset1_path, dataset2_path, output_dir='./data', te
     print("=" * 80)
     
     # Load datasets
-    print("\n📥 STEP 1: Loading Dataset1 (cleaning gpe, art)...")
+    print("\n STEP 1: Loading Dataset1 (cleaning gpe, art)...")
     dataset1 = load_dataset1_clean(dataset1_path)
     
-    print("\n📥 STEP 2: Loading Dataset2 (cleaning cur)...")
+    print("\n STEP 2: Loading Dataset2 (cleaning cur)...")
     dataset2 = load_dataset2_clean(dataset2_path)
     
     # Verify dataset1 is not empty
     if not dataset1:
-        raise ValueError("❌ Dataset1 is empty!")
+        raise ValueError(" Dataset1 is empty!")
     
     # Check if sentences have multiple tokens
     avg_tokens = sum(len(s['tokens']) for s in dataset1) / len(dataset1)
-    print(f"\n📊 Dataset1 verification:")
+    print(f"\n Dataset1 verification:")
     print(f"   Sentences: {len(dataset1)}")
     print(f"   Average tokens per sentence: {avg_tokens:.1f}")
     
     if avg_tokens < 5:
-        print("\n⚠️  WARNING: Sentences are very short!")
+        print("\n  WARNING: Sentences are very short!")
     else:
-        print(f"   ✅ Sentence length looks good!")
+        print(f"    Sentence length looks good!")
     
     # Split Dataset1 into train (85%) and test (15%)
-    print(f"\n✂️  STEP 3: Splitting Dataset1 (85% train, 15% test)...")
+    print(f"\n STEP 3: Splitting Dataset1 (85% train, 15% test)...")
     train_data, test_data = train_test_split(dataset1, test_size=test_size, random_state=42)
     
     # Add Dataset2 to training data
-    print(f"\n➕ STEP 4: Adding Dataset2 to training data...")
+    print(f"\n STEP 4: Adding Dataset2 to training data...")
     original_train_size = len(train_data)
     train_data.extend(dataset2)
     print(f"   Added {len(dataset2)} sentences from Dataset2")
     
     # Verify all labels are consistent
-    print(f"\n🔍 STEP 5: Verifying label consistency...")
+    print(f"\n STEP 5: Verifying label consistency...")
     all_train_labels = set()
     all_test_labels = set()
     
@@ -193,13 +193,13 @@ def prepare_datasets_clean(dataset1_path, dataset2_path, output_dir='./data', te
     print(f"   Test entity types: {sorted(test_entity_types)}")
     
     if train_entity_types == test_entity_types:
-        print(f"\n   ✅✅✅ PERFECT! Train and test have IDENTICAL entity types!")
+        print(f"\n    PERFECT! Train and test have IDENTICAL entity types!")
     else:
-        print(f"\n   ⚠️  WARNING: Entity types differ!")
+        print(f"\n     WARNING: Entity types differ!")
         print(f"   Only in train: {train_entity_types - test_entity_types}")
         print(f"   Only in test: {test_entity_types - train_entity_types}")
     
-    print(f"\n📊 FINAL DATASET SIZES:")
+    print(f"\n FINAL DATASET SIZES:")
     print("=" * 80)
     print(f"Train data:")
     print(f"   From Dataset1: {original_train_size} sentences")
@@ -216,7 +216,7 @@ def prepare_datasets_clean(dataset1_path, dataset2_path, output_dir='./data', te
     train_entities = sum(sum(1 for tag in s['ner_tags'] if tag != 'O') for s in train_data)
     test_entities = sum(sum(1 for tag in s['ner_tags'] if tag != 'O') for s in test_data)
     
-    print(f"\n📊 TOKEN & ENTITY COUNTS:")
+    print(f"\n TOKEN & ENTITY COUNTS:")
     print(f"   Train: {train_tokens:,} tokens, {train_entities} entities ({train_entities/train_tokens*100:.1f}%)")
     print(f"   Test:  {test_tokens:,} tokens, {test_entities} entities ({test_entities/test_tokens*100:.1f}%)")
     
@@ -224,28 +224,23 @@ def prepare_datasets_clean(dataset1_path, dataset2_path, output_dir='./data', te
     train_path = os.path.join(output_dir, 'train.json')
     test_path = os.path.join(output_dir, 'test.json')
     
-    print(f"\n💾 STEP 6: Saving cleaned datasets...")
+    print(f"\n STEP 6: Saving cleaned datasets...")
     with open(train_path, 'w', encoding='utf-8') as f:
         json.dump(train_data, f, ensure_ascii=False, indent=2)
-    print(f"   ✅ Saved: {train_path}")
+    print(f"    Saved: {train_path}")
     
     with open(test_path, 'w', encoding='utf-8') as f:
         json.dump(test_data, f, ensure_ascii=False, indent=2)
-    print(f"   ✅ Saved: {test_path}")
+    print(f"    Saved: {test_path}")
     
     print("\n" + "=" * 80)
-    print("✅ CLEAN DATASET PREPARATION COMPLETE!")
+    print("CLEAN DATASET PREPARATION COMPLETE!")
     print("=" * 80)
-    print(f"\n🎯 Key improvements:")
+    print(f"\n Key improvements:")
     print(f"   • IDENTICAL labels in train and test")
     print(f"   • Removed problematic labels: gpe, art, cur")
     print(f"   • Clean evaluation: {sorted(train_entity_types)}")
-    print(f"\nNext steps:")
-    print(f"1. Delete old model: rmdir /s /q ner_model")
-    print(f"2. Train with clean data:")
-    print(f"   python train_with_weights.py --model_save_path ./ner_model --dataset_path ./data/train_clean.json --num_train_epochs 10 --use_class_weights")
-    print(f"3. Test with clean data:")
-    print(f"   python pipeline.py --model_load_path ./ner_model --input_file ./data/test_clean.json --output_file ./results/predictions_clean.json")
+    
     
     return train_path, test_path
 

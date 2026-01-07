@@ -42,9 +42,6 @@ echo   - Epochs: 10
 echo   - Learning rate: 5e-5
 echo   - Validation split: 10%%
 echo   - Class weights: ENABLED
-echo.
-echo Estimated time: 30-60 minutes ^(CPU^)
-echo.
 pause
 
 python train_with_validation.py --model_save_path "./ner_model" --dataset_path "./data/train.json" --test_dataset_path "./data/test.json" --num_train_epochs 3 --learning_rate 2e-5 --batch_size 8 --validation_split 0.1 --use_class_weights

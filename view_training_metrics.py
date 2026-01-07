@@ -6,7 +6,7 @@ def view_metrics(metrics_path="./ner_model/training_metrics.json"):
     """View and format training metrics from JSON file"""
     
     if not os.path.exists(metrics_path):
-        print(f"❌ ERROR: Metrics file not found: {metrics_path}")
+        print(f" ERROR: Metrics file not found: {metrics_path}")
         print("\nPlease train the model first using:")
         print("  python train_with_validation.py --model_save_path ./ner_model --dataset_path ./data/train.json --num_train_epochs 3")
         return
@@ -16,13 +16,13 @@ def view_metrics(metrics_path="./ner_model/training_metrics.json"):
         metrics = json.load(f)
     
     print("\n" + "=" * 80)
-    print("📊 TRAINING METRICS SUMMARY")
+    print(" TRAINING METRICS SUMMARY")
     print("=" * 80)
     
     # Training info
     if 'training_info' in metrics:
         info = metrics['training_info']
-        print("\n🔧 Training Configuration:")
+        print("\n Training Configuration:")
         print(f"   Model:              {info.get('model', 'N/A')}")
         print(f"   Number of Epochs:   {info.get('num_epochs', 'N/A')}")
         print(f"   Batch Size:         {info.get('batch_size', 'N/A')}")
@@ -34,7 +34,7 @@ def view_metrics(metrics_path="./ner_model/training_metrics.json"):
     
     # Epoch-by-epoch progress
     if 'epoch_metrics' in metrics:
-        print("\n📈 Training Progress (Per Epoch):")
+        print("\n Training Progress (Per Epoch):")
         print(f"{'Epoch':<8} {'Train Loss':<12} {'Train Acc':<12} {'Val Loss':<12} {'Val Acc':<12}")
         print("-" * 60)
         
@@ -52,7 +52,7 @@ def view_metrics(metrics_path="./ner_model/training_metrics.json"):
     # Final validation metrics
     if 'final_validation_metrics' in metrics:
         val_metrics = metrics['final_validation_metrics']
-        print("\n✅ Final Validation Metrics:")
+        print("\n Final Validation Metrics:")
         print(f"   Loss:      {val_metrics.get('loss', 0):.4f}")
         print(f"   Accuracy:  {val_metrics.get('accuracy', 0):.4f}")
         print(f"   Precision: {val_metrics.get('precision', 0):.4f}")
@@ -62,7 +62,7 @@ def view_metrics(metrics_path="./ner_model/training_metrics.json"):
     # Test metrics if available
     if 'test_metrics' in metrics:
         test_metrics = metrics['test_metrics']
-        print("\n🎯 Test Set Metrics:")
+        print("\n Test Set Metrics:")
         print(f"   Test Examples: {metrics.get('num_test_examples', 'N/A')}")
         print(f"   Loss:      {test_metrics.get('loss', 0):.4f}")
         print(f"   Accuracy:  {test_metrics.get('accuracy', 0):.4f}")
@@ -72,27 +72,6 @@ def view_metrics(metrics_path="./ner_model/training_metrics.json"):
     
     print("\n" + "=" * 80)
     
-    # Performance summary
-    if 'final_validation_metrics' in metrics:
-        val_f1 = metrics['final_validation_metrics'].get('f1', 0)
-        print("\n💡 Performance Summary:")
-        
-        if val_f1 >= 0.85:
-            print("   🌟 Excellent performance! (F1 ≥ 0.85)")
-        elif val_f1 >= 0.75:
-            print("   ✅ Good performance! (F1 ≥ 0.75)")
-        elif val_f1 >= 0.65:
-            print("   ⚠️  Moderate performance (F1 ≥ 0.65)")
-            print("   Consider: More epochs, different learning rate, or more training data")
-        else:
-            print("   ❌ Low performance (F1 < 0.65)")
-            print("   Suggestions:")
-            print("      - Increase number of epochs")
-            print("      - Try different learning rates")
-            print("      - Add more training data")
-            print("      - Check if data is properly formatted")
-    
-    print("\n" + "=" * 80)
     print()
 
 if __name__ == "__main__":
