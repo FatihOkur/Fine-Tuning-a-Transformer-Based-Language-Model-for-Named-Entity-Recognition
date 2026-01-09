@@ -144,7 +144,7 @@ class ProgressCallback(TrainerCallback):
     def on_epoch_end(self, args, state, control, logs=None, **kwargs):
         epoch = int(state.epoch)
         
-        print(f"\n📊 Evaluating epoch {epoch}/{self.num_epochs}...", end=" ", flush=True)
+        print(f"\n Evaluating epoch {epoch}/{self.num_epochs}...", end=" ", flush=True)
         
         # Calculate training metrics on a subset (for speed)
         train_loss = 0
@@ -167,7 +167,7 @@ class ProgressCallback(TrainerCallback):
                 # Restore logging
                 args.logging_steps = original_logging
             except Exception as e:
-                print(f"\n⚠️  Warning: Could not evaluate training set: {e}")
+                print(f"\n  Warning: Could not evaluate training set: {e}")
                 train_loss = 0
                 train_accuracy = 0
         
